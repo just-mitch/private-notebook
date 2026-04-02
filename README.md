@@ -1,34 +1,48 @@
-# private-notebook
+# deploying-marimo-to-cloudflare
 
-Example repo: publish a [marimo](https://marimo.io) notebook to a Cloudflare Worker with basic HTTP password protection.
+An agent skill for deploying [marimo](https://marimo.io) notebooks to Cloudflare Workers as interactive WASM apps, protected with HTTP basic auth.
 
-## Setup
+## Install the skill
 
 ```bash
+npx skills add just-mitch/private-notebook
+```
+
+## What it does
+
+When triggered, the skill instructs your coding agent to:
+
+1. Export a marimo notebook to WASM via `marimo export html-wasm --include-cloudflare`
+2. Inject a Cloudflare Worker with basic HTTP password auth
+3. Deploy with `wrangler deploy` and set the password as a Cloudflare secret
+
+It also covers the non-obvious gotcha: `mo.notebook_location()` returns a URL (not a file path) in WASM, so data files in `public/` must be fetched over HTTP.
+
+## Example
+
+The [`example/`](example/) directory contains a working project you can deploy as-is:
+
+```bash
+cd example
 uv sync
 echo 'NOTEBOOK_PASSWORD=changeme' > .env
-```
 
-## Local dev
-
-```bash
-# edit code
+# edit locally
 uv run marimo edit notebook.py
 
-# view
-uv run marimo run notebook.py
-```
-
-## Deploy
-
-```bash
+# deploy
 ./deploy.sh
 ```
 
-Exports the notebook as WASM, injects basic auth into the Cloudflare Worker, deploys, and sets the password as a secret. Rerun to update.
+## Repo structure
 
-## How it works
-
-- `public/` — static files (e.g. `sample.csv`) bundled into the WASM export
-- `notebook.py` — uses `mo.notebook_location()` so data paths resolve both locally and in WASM
-- `deploy.sh` — handles export, auth injection, and `wrangler deploy` in one step
+```
+skills/
+  deploying-marimo-to-cloudflare/
+    SKILL.md                       # the skill
+example/
+  notebook.py                      # sample marimo notebook
+  deploy.sh                        # reference deploy script
+  public/sample.csv                # sample data
+  pyproject.toml
+```
