@@ -34,7 +34,8 @@ uv run marimo export html-wasm "$NOTEBOOK" \
   -o "$DIST_DIR" \
   --mode run \
   --include-cloudflare \
-  --force
+  --force \
+  --no-sandbox
 
 # ── Patch wrangler.jsonc with correct worker name and asset path ──────
 cat > "$DIST_DIR/../wrangler.jsonc" <<JSONC
@@ -44,7 +45,8 @@ cat > "$DIST_DIR/../wrangler.jsonc" <<JSONC
   "compatibility_date": "2025-01-01",
   "assets": {
     "directory": "./dist",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "run_worker_first": true
   }
 }
 JSONC
